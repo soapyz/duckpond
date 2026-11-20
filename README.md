@@ -31,9 +31,9 @@
 
 ## 🚀 快速开始
 
-**方式一：直接运行发布版（推荐自用）**
+**方式一：直接用发布包（推荐自用）**
 
-1. 到 Releases 下载 `鸭塘-DuckPond-win64.zip`
+1. 到 Releases 下载 `鸭塘-DuckPond-win64.zip`（仓库里没有附件时，用方式二自己打一个）
 2. 解压到任意固定目录（例如 `D:\Tools\鸭塘`）
 3. 双击 `DuckPond.exe`
 
@@ -42,8 +42,14 @@
 **方式二：自己构建**
 
 ```powershell
-git clone https://github.com/<your-name>/duckpond.git
+git clone https://github.com/soapyz/duckpond.git
 cd duckpond
+.\scripts\build.ps1        # 产出 dist\ 和 鸭塘-DuckPond-win64.zip
+```
+
+或手动：
+
+```powershell
 dotnet publish -c Release -r win-x64 --self-contained true -o .\dist
 ```
 
