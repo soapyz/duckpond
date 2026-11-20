@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>鸭塘 DuckPond</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo"><img src="duck.png" alt="鸭塘" /></div>
+      <div class="brand-text">
+        <h1>鸭塘</h1>
+        <p>把专注养成一只鸭</p>
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip"><span>今日专注</span><b id="chipToday">0 分</b></div>
+      <div class="chip"><span>连续</span><b id="chipStreak">0 天</b></div>
+      <div class="chip"><span>鸭塘</span><b id="chipDucks">0 只</b></div>
+      <div class="chip status" id="chipStatus"><i></i><b>待机中</b></div>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="focus">⏱ 专注</button>
+    <button class="tab-btn" data-tab="pond"><img class="tab-ico" src="duck.png" alt="鸭塘" />鸭塘</button>
+    <button class="tab-btn" data-tab="board">📊 看板</button>
+    <button class="tab-btn" data-tab="settings">⚙️ 设置</button>
+  </nav>
+
+  <main>
+    <!-- 专注 -->
+    <section class="tab-panel active" id="tab-focus">
+      <div class="focus-layout">
+        <div class="card timer-card">
+          <div class="ring">
+            <svg viewBox="0 0 200 200" aria-hidden="true">
+              <circle class="ring-bg" cx="100" cy="100" r="90" />
+              <circle class="ring-fg" id="ringProgress" cx="100" cy="100" r="90" />
+            </svg>
+            <div class="ring-center">
+              <div class="phase" id="phaseLabel">准备开始</div>
+              <div class="time" id="timeText">25:00</div>
+              <div class="task-line" id="taskText">选个时长，开始专注</div>
+            </div>
+          </div>
+          <div class="controls">
+            <button class="primary" id="btnMain">开始专注</button>
+            <button class="ghost" id="btnSkip">跳过</button>
+            <button class="ghost danger" id="btnAbort">结束</button>
+          </div>
+          <div class="cycle-dots" id="cycleDots"></div>
+        </div>
+
+        <aside class="focus-side">
+          <div class="card">
+            <h3 class="card-title">这次要做什么</h3>
+            <input class="input" id="taskInput" placeholder="比如：整理选品清单" maxlength="40" />
+            <div class="preset-row" id="presetRow">
+              <button class="pill" data-min="15">15 分钟</button>
+              <button class="pill active" data-min="25">25 分钟</button>
+              <button class="pill" data-min="45">45 分钟</button>
+              <button class="pill" data-min="60">60 分钟</button>
+            </div>
+            <button class="primary wide" id="btnStartFocus">开始专注</button>
+          </div>
+
+          <div class="card">
+            <div class="row">
+              <span class="muted">下一次定时休息</span>
+              <b id="nextRest">—</b>
+            </div>
+            <div class="muted small" id="nextRestSub">暂无启用的提醒</div>
+            <div class="quick-rest">
+              <button class="pill" data-rest="300">小憩 5′</button>
+              <button class="pill" data-rest="600">休息 10′</button>
+              <button class="pill" data-rest="900">休息 15′</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="goal-line">
+              <span class="muted">今日目标</span>
+              <span class="goal-progress" id="goalText">0 / 4 小时</span>
+            </div>
+            <div class="bar"><i id="goalBar"></i></div>
+            <div class="mini-grid">
+              <div><span class="k">孵出</span><b id="todayDucks">0 只</b></div>
+              <div><span class="k">休息</span><b id="todayRests">0 次</b></div>
+              <div><span class="k">逃鸭</span><b id="todayEscapes">0 只</b></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>今天的节奏</h3><span class="muted" id="todayStripHint">还没有记录，先去专注一段</span></div>
+        <div class="rec-row" id="todayStrip"></div>
+      </div>
+    </section>
+
+    <!-- 鸭塘 -->
+    <section class="tab-panel" id="tab-pond">
+      <div class="card pond-head">
+        <div class="pond-title">
+          <b id="pondName">小水洼</b>
+          <span class="muted" id="pondCount">0 只鸭</span>
+        </div>
+        <div class="pond-progress">
+          <div class="bar"><i id="pondBar"></i></div>
+          <span class="muted small" id="pondNext">完成第一次专注就能孵出第一只鸭</span>
+        </div>
+        <div class="pond-meta">
+          <span>累计专注 <b id="pondTotalFocus">0 小时</b></span>
+          <span>逃走的鸭 <b id="pondEscapes">0 只</b></span>
+        </div>
+      </div>
+
+      <div class="pond-stage">
+        <canvas id="pondCanvas"></canvas>
+        <div class="pond-empty" id="pondEmpty">
+          <img class="empty-duck" src="duck.png" alt="鸭" />
+          <p>塘里还空着，完成一次专注就有一只小鸭住进来</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>鸭册</h3>
+          <span class="muted" id="duckbookCount">0 只</span>
+        </div>
+        <div class="duckbook" id="duckbook"></div>
+      </div>
+
+      <div class="card" id="ghostCard" hidden>
+        <div class="card-head">
+          <h3>飞走的鸭</h3>
+          <span class="muted">没守住的专注，留个影子提醒</span>
+        </div>
+        <div class="ghost-list" id="ghostList"></div>
+      </div>
+    </section>
+
+    <!-- 看板 -->
+    <section class="tab-panel" id="tab-board">
+      <div class="metrics">
+        <div class="card metric"><span>今日专注</span><b id="mToday">0 分</b><small id="mTodaySub">0 次 · 0 只鸭</small></div>
+        <div class="card metric"><span>本周专注</span><b id="mWeek">0 小时</b><small id="mWeekSub">—</small></div>
+        <div class="card metric"><span>连续天数</span><b id="mStreak">0 天</b><small>每天至少一次专注</small></div>
+        <div class="card metric"><span>累计专注</span><b id="mTotal">0 小时</b><small id="mTotalSub">0 只鸭</small></div>
+      </div>
+
+      <div class="board-row">
+        <div class="card chart-card">
+          <div class="card-head"><h3>最近 7 天</h3><span class="muted" id="weekHint"></span></div>
+          <div class="bars" id="weekBars"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="card-head"><h3>一天中的专注时段</h3><span class="muted">近 30 天</span></div>
+          <div class="hourbars" id="hourBars"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>本月热力图</h3><span class="muted" id="monthTitle"></span></div>
+        <div class="heatmap" id="heatmap"></div>
+        <div class="heat-legend"><span>少</span><i class="lv0"></i><i class="lv1"></i><i class="lv2"></i><i class="lv3"></i><i class="lv4"></i><span>多</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>成就墙</h3><span class="muted" id="badgeCount"></span></div>
+        <div class="badges" id="badges"></div>
+      </div>
+
+      <div class="board-actions">
+        <button class="primary" id="btnExport">导出今日打卡图</button>
+        <span class="muted small" id="escapeStats"></span>
+      </div>
+    </section>
+
+    <!-- 设置 -->
+    <section class="tab-panel" id="tab-settings">
+      <div class="card">
+        <div class="card-head"><h3>番茄钟</h3><span class="muted">改完即时生效</span></div>
+        <div class="setting-grid">
+          <div class="setting"><label for="setFocus">专注时长（分钟）</label><input type="number" id="setFocus" min="1" max="180" /></div>
+          <div class="setting"><label for="setShort">短休息（分钟）</label><input type="number" id="setShort" min="1" max="60" /></div>
+          <div class="setting"><label for="setLong">长休息（分钟）</label><input type="number" id="setLong" min="1" max="120" /></div>
+          <div class="setting"><label for="setCycles">几轮后长休息</label><input type="number" id="setCycles" min="1" max="12" /></div>
+        </div>
+        <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="setAutoNext" /><i></i><span>一段结束自动衔接下一段</span></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>休息遮罩</h3></div>
+        <div class="setting-grid">
+          <div class="setting wide-setting">
+            <label>遮罩强度 <span class="num" id="setStrengthVal">55%</span></label>
+            <input type="range" id="setStrength" min="10" max="90" step="5" />
+          </div>
+          <div class="setting"><label for="setPostpone">全屏时顺延（分钟）</label><input type="number" id="setPostpone" min="1" max="120" /></div>
+        </div>
+        <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="setOverlay" /><i></i><span>休息时模糊桌面</span></label>
+          <label class="switch"><input type="checkbox" id="setGuard" /><i></i><span>全屏应用时不打断</span></label>
+          <label class="switch"><input type="checkbox" id="setSound" /><i></i><span>鸭叫与提示音</span></label>
+        </div>
+        <div class="row-actions"><button class="ghost" id="btnPreview">预览遮罩 30 秒</button></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>定时休息</h3>
+          <button class="ghost small" id="btnPauseRemind">暂停提醒</button>
+        </div>
+        <div class="rules" id="rulesList"></div>
+
+        <form id="ruleForm" class="rule-form">
+          <div class="form-title" id="ruleFormTitle">新增一条提醒</div>
+          <div class="setting-grid">
+            <div class="setting">
+              <label for="ruleMode">方式</label>
+              <select id="ruleMode">
+                <option value="daily">每天</option>
+                <option value="weekly">每周指定几天</option>
+                <option value="interval">固定间隔</option>
+                <option value="once">仅一次</option>
+              </select>
+            </div>
+            <div class="setting" id="wrapTime"><label for="ruleTime">时间</label><input type="time" id="ruleTime" value="10:15" /></div>
+            <div class="setting" id="wrapOnce" hidden><label for="ruleOnce">日期时间</label><input type="datetime-local" id="ruleOnce" /></div>
+            <div class="setting" id="wrapInterval" hidden><label for="ruleInterval">间隔（分钟）</label><input type="number" id="ruleInterval" value="60" min="5" max="600" /></div>
+            <div class="setting"><label for="ruleRestMin">休息（分钟）</label><input type="number" id="ruleRestMin" value="10" min="1" max="120" /></div>
+            <div class="setting"><label for="ruleLabel">名称</label><input type="text" id="ruleLabel" value="休息一下" maxlength="12" /></div>
+          </div>
+          <div class="weekdays" id="wrapWeekdays" hidden>
+            <label><input type="checkbox" value="0" checked /><span>一</span></label>
+            <label><input type="checkbox" value="1" checked /><span>二</span></label>
+            <label><input type="checkbox" value="2" checked /><span>三</span></label>
+            <label><input type="checkbox" value="3" checked /><span>四</span></label>
+            <label><input type="checkbox" value="4" checked /><span>五</span></label>
+            <label><input type="checkbox" value="5" /><span>六</span></label>
+            <label><input type="checkbox" value="6" /><span>日</span></label>
+          </div>
+          <div class="switch-row">
+            <label class="switch"><input type="checkbox" id="ruleOverlay" checked /><i></i><span>用模糊遮罩休息</span></label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="primary" id="ruleSubmit">添加规则</button>
+            <button type="button" class="ghost" id="ruleCancel" hidden>取消编辑</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>启动与数据</h3></div>
+        <div class="switch-row">
+          <label class="switch"><input type="checkbox" id="setAutoStart" /><i></i><span>开机自动启动（托盘静默）</span></label>
+        </div>
+        <div class="setting-grid">
+          <div class="setting"><label for="setGoal">每日目标（分钟）</label><input type="number" id="setGoal" min="30" max="960" /></div>
+        </div>
+        <div class="row-actions"><button class="ghost" id="btnData">打开数据文件夹</button></div>
+        <p class="muted tiny" id="dataHint">数据只保存在本机，退出时自动写入并每天备份一次。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footbar">
+    <span id="footTip">Ctrl+Alt+R 立即休息 · Ctrl+Alt+P 开始/暂停 · Ctrl+Alt+D 打开面板</span>
+  </footer>
+</div>
+
+<div class="celebrate hidden" id="celebrate"></div>
+<div class="toastbar" id="toastbar"></div>
+
+<script src="duck.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
